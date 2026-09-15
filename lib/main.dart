@@ -4,8 +4,10 @@ void main() {
   runApp(const MyApp());
 }
 
+/// The root widget of the application.
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  /// Creates the app.
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,9 +19,12 @@ class MyApp extends StatelessWidget {
   }
 }
 
+/// The home page showing the counter.
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  /// Creates the home page.
+  const new({required this.title, super.key});
 
+  /// The title displayed in the app bar.
   final String title;
 
   @override
