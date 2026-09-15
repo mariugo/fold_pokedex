@@ -44,7 +44,7 @@ jobs:
 
       - name: Remove generated files from coverage
         run: |
-          lcov --remove coverage/lcov.info \
+          lcov --ignore-errors unused --remove coverage/lcov.info \
             'lib/**/*.g.dart' \
             'lib/**/*.freezed.dart' \
             'lib/generated/**' \
