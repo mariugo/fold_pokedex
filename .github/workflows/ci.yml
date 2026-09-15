@@ -64,8 +64,32 @@ jobs:
             }
           }'
 
-      - name: Check for security vulnerabilities
-        run: dart pub audit
+      - name: Check dependency advisories
+        run: |
+          flutter pub outdated --json > pub-outdated.json
+          python3 - <<'PY'
+          import json
+          import sys
+
+          with open('pub-outdated.json', encoding='utf-8') as file:
+            packages = json.load(file).get('packages', [])
+
+          flagged_packages = [
+            package['package']
+            for package in packages
+            if package.get('isCurrentAffectedByAdvisory')
+            or package.get('isCurrentRetracted')
+          ]
+
+          if flagged_packages:
+            print(
+              'Affected or retracted dependencies found: '
+              + ', '.join(flagged_packages),
+            )
+            sys.exit(1)
+
+          print('No affected or retracted dependencies found.')
+          PY
 
       - name: Verify Android build sanity
         run: flutter build apk --debug
