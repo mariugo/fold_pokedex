@@ -1,0 +1,71 @@
+name: Flutter CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  quality_and_tests:
+    name: Code Quality & Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java (Android toolchain)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
+
+      - name: Install lcov
+        run: sudo apt-get update && sudo apt-get install -y lcov
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Check code formatting
+        run: dart format --set-exit-if-changed .
+
+      - name: Analyze code (Strict mode)
+        run: flutter analyze --fatal-infos --fatal-warnings
+
+      - name: Run Tests with Coverage
+        run: flutter test --coverage
+
+      - name: Remove generated files from coverage
+        run: |
+          lcov --remove coverage/lcov.info \
+            'lib/**/*.g.dart' \
+            'lib/**/*.freezed.dart' \
+            'lib/generated/**' \
+            -o coverage/lcov_cleaned.info
+
+      - name: Verify Coverage Threshold (>= 90%)
+        run: |
+          COVERAGE=$(lcov --summary coverage/lcov_cleaned.info | grep lines | awk '{print $2}' | cut -d'%' -f1)
+          echo "Test coverage: $COVERAGE%"
+          REQUIRED=90.0
+          awk -v cov="$COVERAGE" -v req="$REQUIRED" 'BEGIN {
+            if (cov < req) {
+              print "Coverage (" cov "%) is lower than required threshold (" req "%)."
+              exit 1
+            } else {
+              print "Coverage passed: " cov "% >= " req "%"
+            }
+          }'
+
+      - name: Check for security vulnerabilities
+        run: dart pub audit
+
+      - name: Verify Android build sanity
+        run: flutter build apk --debug
