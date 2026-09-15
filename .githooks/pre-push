@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+set -e
+
+echo "🚀 [Pre-push Hook] Iniciando validações locais..."
+
+# 1. Format Check
+echo "🔍 1/4 Verificando formatação..."
+dart format --output=none --set-exit-if-changed .
+if [ $? -ne 0 ]; then
+  echo "❌ Erro: O código não está formatado. Execute 'dart format .' antes de enviar."
+  exit 1
+fi
+
+# 2. Static Analysis
+echo "🔍 2/4 Rodando análise estática com regras estritas..."
+flutter analyze --fatal-infos --fatal-warnings
+if [ $? -ne 0 ]; then
+  echo "❌ Erro: Falha no linter/analyze."
+  exit 1
+fi
+
+# 3. Tests & Coverage
+echo "🧪 3/4 Executando testes e coletando coverage..."
+flutter test --coverage
+
+if [ ! -f coverage/lcov.info ]; then
+  echo "❌ Arquivo coverage/lcov.info não gerado."
+  exit 1
+fi
+
+# 4. Coverage Filter & Threshold
+echo "📊 4/4 Checando barreira de cobertura (90%)..."
+
+# Remove arquivos gerados caso utilize build_runner/freezed
+if command -v lcov >/dev/null 2>&1; then
+  lcov --remove coverage/lcov.info 'lib/**/*.g.dart' 'lib/**/*.freezed.dart' -o coverage/lcov_cleaned.info --quiet
+  COVERAGE=$(lcov --summary coverage/lcov_cleaned.info | grep lines | awk '{print $2}' | cut -d'%' -f1)
+else
+  # Fallback caso não tenha lcov instalado na máquina (extrai direto via perl/awk)
+  COVERAGE=$(perl -ne 'if (/DA:\d+,(\d+)/) { $total++; $hit++ if $1 > 0; } END { printf "%.2f", ($hit/$total)*100; }' coverage/lcov.info)
+fi
+
+echo "Cobertura atual: $COVERAGE%"
+
+REQUIRED=90.0
+IS_VALID=$(awk -v cov="$COVERAGE" -v req="$REQUIRED" 'BEGIN { print (cov >= req) ? 1 : 0 }')
+
+if [ "$IS_VALID" -eq 0 ]; then
+  echo "❌ Erro: Cobertura insuficiente ($COVERAGE%). O limite mínimo é de $REQUIRED%."
+  exit 1
+fi
+
+echo "✅ Todas as checagens passaram com sucesso! Continuando push..."
+exit 0
