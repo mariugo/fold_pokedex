@@ -21,7 +21,7 @@ lib/
 - Views are lean: only layout/animation logic, no business logic.
 - ViewModels hold UI state (`ChangeNotifier`/`Cubit`/`Bloc`) and receive Repositories via constructor injection.
 - Repositories are the single source of truth; Services only wrap external APIs.
-- See the `flutter-apply-architecture-best-practices` skill under [.github/skills](.github/skills) for the full workflow when adding a feature.
+- See the `flutter-apply-architecture-best-practices` skill under [.github/skills](skills) for the full workflow when adding a feature.
 
 ## 2. Best Practices & Clean Code
 
@@ -30,7 +30,7 @@ lib/
 - No business logic in `build()` methods.
 - Use `equatable` for value equality on models/states already in this project.
 - Write doc comments for public members (enforced by `analysis_options.yaml` / `very_good_analysis`).
-- Run `dart format`, `flutter analyze --fatal-infos --fatal-warnings`, and `flutter test --coverage` before pushing (mirrors [.githooks/pre-push](.githooks/pre-push) and [.github/workflows/ci.yml](.github/workflows/ci.yml)).
+- Run `dart format`, `flutter analyze --fatal-infos --fatal-warnings`, and `flutter test --coverage` before pushing (mirrors [.githooks/pre-push](../.githooks/pre-push) and [.github/workflows/ci.yml](workflows/ci.yml)).
 
 ## 3. Modern Dart 3 Syntax
 
@@ -52,11 +52,11 @@ This is the highest priority for anything touching `lib/ui/`.
 - Define explicit breakpoints (e.g. compact < 600, medium 600–840, expanded > 840) and switch layouts (`Row` vs `Column`, single-pane vs two-pane) accordingly.
 - Use `Expanded`/`Flexible` for space distribution; constrain max width of lists/text on large/unfolded screens.
 - Never lock screen orientation — foldables and multi-window modes require both portrait and landscape support.
-- Reference the `flutter-build-responsive-layout` skill under [.github/skills](.github/skills) for the full adaptive-layout workflow and examples.
+- Reference the `flutter-build-responsive-layout` skill under [.github/skills](skills) for the full adaptive-layout workflow and examples.
 
 ## Available Skills
 
-Official Dart/Flutter skills are installed under [.github/skills](.github/skills) (via `dart run skills@ get`). Consult them proactively when the task matches, especially:
+Official Dart/Flutter skills are installed under [.github/skills](skills) (via `dart run skills@ get`). Consult them proactively when the task matches, especially:
 
 - `flutter-apply-architecture-best-practices` — feature structuring/refactoring
 - `flutter-build-responsive-layout` — adaptive/foldable layouts
