@@ -12,5 +12,14 @@ import UIKit
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+
+    // Unverified: no Mac/Xcode available to confirm `messenger()` resolves
+    // as expected on this newer implicit-engine embedding. See
+    // FoldPostureStreamHandler.swift for details.
+    let postureChannel = FlutterEventChannel(
+      name: "fold_pokedex/fold_posture",
+      binaryMessenger: engineBridge.pluginRegistry.messenger()
+    )
+    postureChannel.setStreamHandler(FoldPostureStreamHandler())
   }
 }
